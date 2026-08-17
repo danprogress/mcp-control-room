@@ -1,0 +1,124 @@
+{
+  "api": {
+    "openapi": {
+      "spec_file": "/work/server/openapi_oeping.yml",
+      "base_url": "http://3.13.139.192:8810",
+      "spec_name": "Human Readable Label"
+    }
+  },
+  "security": {
+    "authentication": {
+      "enabled": true,
+      "service_account": {
+        "enabled": true,
+        "required": true,
+        "mode": "token",
+        "header": "X-OEMCP-SERVICEACCOUNT",
+        "prefix": "Bearer",
+        "audience": "",
+        "public_key": "",
+        "issuer": "https://your-auth-server.com",
+        "required_scopes": ["mcp_access"],
+        "jwks_uri": "https://your-auth-server.com/.well-known/jwks.json",
+        "algorithms": ["RS256"],
+        "jwks_cache_seconds": 300
+      },
+      "user_auth": {
+        "enabled": false
+      }
+    }
+  },
+  "runtime": {
+    "max_request_bytes": 10240,
+    "server": {
+      "name": "openedge-mcp-production",
+      "transport": {
+        "type": "streamable-http",
+        "host": "0.0.0.0",
+        "port": 8500,
+        "path": "/http"
+      }
+    },
+    "http": {
+      "base_url": "http://3.13.139.192:8810",
+      "response_guard": {
+        "enabled": true,
+        "mode": "trim",
+        "max_array_items": 50,
+        "max_response_bytes": 1048576
+      },
+      "limits": {
+        "max_connections": 100,
+        "max_keepalive_connections": 20
+      },
+      "tls": {
+        "certs_dir": "/work/certs",
+        "insecureSkipVerify": false,
+        "ignoreHostVerification": false
+      }
+    },
+    "middleware": {
+      "error_handling": {
+        "enabled": true,
+        "transform_errors": true,
+        "include_traceback": false
+      },
+      "logging": {
+        "enabled": true,
+        "structured": true,
+        "include_payloads": false
+      },
+      "request_timeout": {
+        "enabled": true,
+        "timeout_ms": 500
+      },
+      "method_validation": {
+        "enabled": true
+      },
+      "circuit_breaker": {
+        "enabled": true,
+        "error_threshold": 0.5,
+        "window_seconds": 60,
+        "min_requests": 10
+      },
+      "rate_limiting": {
+        "enabled": true,
+        "max_requests_per_second": 10,
+        "burst_capacity": 20,
+        "global": false
+      },
+      "audit": {
+        "enabled": true,
+        "file": "/var/log/mcp/audit.log",
+        "max_bytes": 10485760,
+        "backup_count": 5,
+        "mode": "append"
+      }
+    },
+    "tools": {
+      "param_validation": {
+        "enabled": true,
+        "max_total_bytes": 32768,
+        "max_string_length": 4096,
+        "patterns": ["javascript:", "data:text/html", "<script", "on[a-z]+=", "file:", "../", "..\\"]
+      }
+    }
+  },
+  "assistant": {
+    "prompts": {
+      "dir": "/work/server/prompts"
+    }
+  },
+  "observability": {
+    "logging": {
+      "level": "INFO",
+      "json": true,
+      "loggers": {
+        "middleware.circuit_breaker": "WARNING",
+        "middleware.timeout": "WARNING",
+        "http.outbound": "INFO",
+        "auth": "INFO"
+      }
+    }
+  }
+}
